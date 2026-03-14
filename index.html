@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Webex Contact Center — Zero to Hero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────────
+       TOKENS
+    ───────────────────────────────────────────── */
+    :root {
+      --ink:      #040D18;
+      --deep:     #071525;
+      --card:     #0B1E30;
+      --surface:  #0F2840;
+      --rim:      rgba(0,188,235,0.14);
+      --blue:     #00BCEB;
+      --blue-dim: #0098C2;
+      --teal:     #00D4B8;
+      --navy:     #05547C;
+      --text:     #C9E8F7;
+      --muted:    #5B89A6;
+      --white:    #FFFFFF;
+      --display:  'Bebas Neue', sans-serif;
+      --body:     'DM Sans', sans-serif;
+      --mono:     'DM Mono', monospace;
+      --ease:     cubic-bezier(.22,1,.36,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--ink);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─────────────────────────────────────────────
+       BACKGROUND MESH ANIMATION
+    ───────────────────────────────────────────── */
+    .bg-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .bg-mesh::before {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,188,235,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,212,184,0.05) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 60% at 60% 10%, rgba(5,84,124,0.12) 0%, transparent 50%);
+      animation: meshDrift 18s ease-in-out infinite alternate;
+    }
+    @keyframes meshDrift {
+      0%   { transform: translate(0,0) scale(1); }
+      100% { transform: translate(2%, 3%) scale(1.04); }
+    }
+
+    /* Grid lines */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,188,235,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,188,235,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* ─────────────────────────────────────────────
+       LAYOUT WRAPPER
+    ───────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; }
+
+    /* ─────────────────────────────────────────────
+       NAV
+    ───────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; gap: 0;
+      padding: 0 48px;
+      height: 68px;
+      background: rgba(4,13,24,0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--rim);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none;
+    }
+    .nav-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(0,188,235,0.35);
+    }
+    .nav-title {
+      font-family: var(--display);
+      font-size: 22px;
+      letter-spacing: 1.5px;
+      color: var(--white);
+      line-height: 1;
+    }
+    .nav-title span { color: var(--blue); }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 4px;
+      margin-left: auto;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+      letter-spacing: 0.2px;
+    }
+    .nav-links a:hover { color: var(--blue); background: rgba(0,188,235,0.07); }
+
+    .nav-cta {
+      margin-left: 16px;
+      background: linear-gradient(135deg, var(--navy), var(--blue-dim));
+      border: 1px solid rgba(0,188,235,0.3);
+      border-radius: 8px;
+      padding: 8px 20px;
+      color: var(--white) !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+      letter-spacing: 0.5px;
+      transition: box-shadow 0.2s, transform 0.15s !important;
+    }
+    .nav-cta:hover {
+      box-shadow: 0 0 20px rgba(0,188,235,0.3) !important;
+      transform: translateY(-1px) !important;
+      background: rgba(0,0,0,0) !important;
+    }
+
+    /* ─────────────────────────────────────────────
+       HERO
+    ───────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 80px 48px 80px;
+      max-width: 1280px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,188,235,0.08);
+      border: 1px solid var(--rim);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--blue);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeUp 0.7s var(--ease) both;
+    }
+    .eyebrow-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 8px var(--teal);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+
+    .hero-headline {
+      font-family: var(--display);
+      font-size: clamp(72px, 9vw, 130px);
+      line-height: 0.92;
+      letter-spacing: 2px;
+      color: var(--white);
+      margin-bottom: 12px;
+      animation: fadeUp 0.7s var(--ease) 0.1s both;
+    }
+    .hero-headline .accent { color: var(--blue); }
+    .hero-headline .stroke {
+      -webkit-text-stroke: 1.5px var(--blue);
+      color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 560px;
+      margin-bottom: 48px;
+      line-height: 1.7;
+      animation: fadeUp 0.7s var(--ease) 0.2s both;
+    }
+    .hero-sub strong { color: var(--text); font-weight: 500; }
+
+    .hero-actions {
+      display: flex; align-items: center; gap: 16px;
+      animation: fadeUp 0.7s var(--ease) 0.3s both;
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: linear-gradient(135deg, var(--blue-dim) 0%, var(--teal) 100%);
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 0.3px;
+      transition: transform 0.2s var(--ease), box-shadow 0.2s;
+      box-shadow: 0 0 30px rgba(0,188,235,0.25);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px rgba(0,188,235,0.45);
+    }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: transparent;
+      border: 1px solid var(--rim);
+      border-radius: 10px;
+      padding: 13px 28px;
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: rgba(0,188,235,0.05);
+    }
+
+    /* Hero floating badge */
+    .hero-badge {
+      position: absolute;
+      right: 48px; top: 50%;
+      transform: translateY(-50%);
+      width: 380px;
+      animation: fadeUp 0.9s var(--ease) 0.4s both;
+    }
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--rim);
+      border-radius: 16px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--teal), transparent);
+    }
+    .hero-card-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--blue);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .module-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .module-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px;
+      background: rgba(0,188,235,0.04);
+      border: 1px solid rgba(0,188,235,0.1);
+      border-radius: 8px;
+      font-size: 13px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .module-item:hover { background: rgba(0,188,235,0.09); border-color: var(--rim); }
+    .module-icon { font-size: 16px; flex-shrink: 0; }
+    .module-name { flex: 1; color: var(--text); font-weight: 500; }
+    .module-status {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .status-live    { background: rgba(0,212,184,0.12); color: var(--teal);  border: 1px solid rgba(0,212,184,0.25); }
+    .status-lab     { background: rgba(0,188,235,0.12); color: var(--blue);  border: 1px solid var(--rim); }
+    .status-coming  { background: rgba(91,137,166,0.12); color: var(--muted); border: 1px solid rgba(91,137,166,0.2); }
+
+    /* Stats row */
+    .hero-stats {
+      display: flex; gap: 0;
+      margin-top: 20px;
+      border-top: 1px solid var(--rim);
+      padding-top: 20px;
+    }
+    .stat { flex: 1; text-align: center; }
+    .stat + .stat { border-left: 1px solid var(--rim); }
+    .stat-num {
+      font-family: var(--display);
+      font-size: 32px;
+      color: var(--blue);
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─────────────────────────────────────────────
+       SECTION COMMONS
+    ───────────────────────────────────────────── */
+    section {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 100px 48px;
+    }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: var(--display);
+      font-size: clamp(40px, 5vw, 68px);
+      line-height: 0.95;
+      letter-spacing: 1px;
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+    .section-desc {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 56px;
+      font-weight: 300;
+    }
+
+    /* ─────────────────────────────────────────────
+       JOURNEY / MODULES SECTION
+    ───────────────────────────────────────────── */
+    .journey-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .journey-card {
+      background: var(--card);
+      border: 1px solid var(--rim);
+      border-radius: 14px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s var(--ease), border-color 0.25s, box-shadow 0.25s;
+      cursor: default;
+    }
+    .journey-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(0,188,235,0.06) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .journey-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,188,235,0.3);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,188,235,0.1);
+    }
+    .journey-card:hover::after { opacity: 1; }
+
+    .jcard-num {
+      font-family: var(--display);
+      font-size: 52px;
+      color: rgba(0,188,235,0.08);
+      line-height: 1;
+      position: absolute;
+      top: 20px; right: 24px;
+      letter-spacing: 2px;
+      transition: color 0.3s;
+    }
+    .journey-card:hover .jcard-num { color: rgba(0,188,235,0.15); }
+
+    .jcard-icon {
+      width: 44px; height: 44px;
+      background: rgba(0,188,235,0.1);
+      border: 1px solid var(--rim);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      margin-bottom: 18px;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .journey-card:hover .jcard-icon {
+      background: rgba(0,188,235,0.18);
+      box-shadow: 0 0 16px rgba(0,188,235,0.2);
+    }
+    .jcard-title {
+      font-family: var(--display);
+      font-size: 26px;
+      letter-spacing: 0.5px;
+      color: var(--white);
+      margin-bottom: 10px;
+      line-height: 1.1;
+    }
+    .jcard-desc { font-size: 13.5px; color: var(--muted); line-height: 1.6; font-weight: 300; }
+
+    .jcard-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--blue);
+      background: rgba(0,188,235,0.07);
+      border: 1px solid var(--rim);
+      border-radius: 6px;
+      padding: 4px 10px;
+    }
+
+    /* ─────────────────────────────────────────────
+       DIVIDER
+    ───────────────────────────────────────────── */
+    .divider {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+    .divider hr {
+      border: none;
+      border-top: 1px solid var(--rim);
+    }
+
+    /* ─────────────────────────────────────────────
+       LIVE DEMO / CHAT SECTION  ← Widget goes here
+    ───────────────────────────────────────────── */
+    #chat-demo {
+      padding-top: 100px;
+      padding-bottom: 120px;
+    }
+    .demo-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: start;
+    }
+    .demo-info {}
+    .demo-info .section-desc { margin-bottom: 28px; }
+
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 14px; color: var(--text); line-height: 1.5;
+    }
+    .check-icon {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      background: rgba(0,212,184,0.12);
+      border: 1px solid rgba(0,212,184,0.25);
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      color: var(--teal);
+      margin-top: 2px;
+    }
+
+    /* Widget injection zone */
+    .widget-zone {
+      background: var(--card);
+      border: 1px solid var(--rim);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    .widget-zone-top {
+      background: rgba(0,188,235,0.05);
+      border-bottom: 1px solid var(--rim);
+      padding: 14px 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wz-dots { display:flex; gap:6px; }
+    .wz-dots span { width:10px; height:10px; border-radius:50%; }
+    .wz-r { background:#ff5f57; }
+    .wz-y { background:#febc2e; }
+    .wz-g { background:#28c840; }
+    .wz-label {
+      margin-left: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .wz-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 10px;
+      background: rgba(254,188,46,0.1);
+      border: 1px solid rgba(254,188,46,0.25);
+      color: #febc2e;
+    }
+
+    /* Mock browser page content */
+    .mock-page {
+      padding: 32px;
+      min-height: 420px;
+      position: relative;
+      background:
+        linear-gradient(to bottom, rgba(0,188,235,0.02) 0%, transparent 40%);
+    }
+    .mock-header-bar {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 28px;
+    }
+    .mock-logo-pill {
+      background: linear-gradient(135deg, var(--blue-dim), var(--teal));
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-family: var(--display);
+      font-size: 18px;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+    .mock-nav-pills { display:flex; gap:8px; margin-left:auto; }
+    .mock-nav-pills span {
+      width: 50px; height: 10px;
+      background: var(--surface);
+      border-radius: 5px;
+    }
+
+    .mock-hero-block {
+      background: var(--surface);
+      border: 1px solid var(--rim);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .mock-title-line {
+      height: 14px; width: 70%;
+      background: linear-gradient(90deg, rgba(0,188,235,0.2) 0%, rgba(0,188,235,0.05) 100%);
+      border-radius: 4px; margin-bottom: 10px;
+    }
+    .mock-title-line.short { width: 45%; margin-bottom: 18px; }
+    .mock-body-lines { display:flex; flex-direction:column; gap:7px; }
+    .mock-body-lines span {
+      display:block; height:8px;
+      background: rgba(0,188,235,0.07); border-radius:3px;
+    }
+    .mock-body-lines span:nth-child(2) { width:88%; }
+    .mock-body-lines span:nth-child(3) { width:72%; }
+
+    .mock-cards-row { display:flex; gap:12px; margin-bottom:20px; }
+    .mock-mini-card {
+      flex:1; height:80px;
+      background: var(--surface);
+      border: 1px solid var(--rim);
+      border-radius: 8px;
+      display:flex; flex-direction:column; justify-content:flex-end; padding:12px;
+      gap:6px;
+    }
+    .mock-mini-card span {
+      display:block; height:7px; background:rgba(0,188,235,0.08); border-radius:3px;
+    }
+    .mock-mini-card span:first-child { width:55%; background:rgba(0,188,235,0.15); }
+
+    /* ════ WIDGET SNIPPET PLACEHOLDER ════ */
+    .widget-snippet-zone {
+      margin: 0 32px 32px;
+      background: rgba(0,0,0,0.35);
+      border: 1.5px dashed rgba(0,188,235,0.35);
+      border-radius: 10px;
+      padding: 24px;
+      position: relative;
+    }
+    .wsz-label {
+      position: absolute;
+      top: -11px; left: 16px;
+      background: var(--card);
+      padding: 0 10px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--blue);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .wsz-comment {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.9;
+      color: #4A7F9C;
+    }
+    .wsz-comment .cmt { color: #3D6678; font-style: italic; }
+    .wsz-comment .placeholder {
+      color: rgba(0,188,235,0.45);
+      font-style: italic;
+    }
+    .wsz-arrow {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px dashed rgba(0,188,235,0.15);
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+    .wsz-arrow::before {
+      content: '→';
+      color: var(--blue);
+      font-size: 14px;
+    }
+
+    /* Floating mock chat bubble indicator */
+    .mock-chat-bubble {
+      position: absolute;
+      bottom: 24px; right: 24px;
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--blue-dim), var(--teal));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 24px rgba(0,188,235,0.4);
+      animation: chatBounce 3s ease-in-out infinite;
+      cursor: pointer;
+    }
+    @keyframes chatBounce {
+      0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 4px 24px rgba(0,188,235,0.4); }
+      50% { transform: translateY(-5px) scale(1.04); box-shadow: 0 12px 36px rgba(0,188,235,0.5); }
+    }
+    .bubble-ring {
+      position: absolute;
+      inset: -6px;
+      border: 2px solid rgba(0,188,235,0.25);
+      border-radius: 50%;
+      animation: ringPulse 3s ease-in-out infinite;
+    }
+    @keyframes ringPulse {
+      0%,100% { opacity:0.5; transform:scale(1); }
+      50% { opacity:0.1; transform:scale(1.3); }
+    }
+
+    /* ─────────────────────────────────────────────
+       FEATURES STRIP
+    ───────────────────────────────────────────── */
+    .features-strip {
+      padding: 80px 48px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .features-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--rim);
+      border: 1px solid var(--rim);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .feature-item {
+      background: var(--card);
+      padding: 28px 24px;
+      transition: background 0.2s;
+    }
+    .feature-item:hover { background: var(--surface); }
+    .fi-icon { font-size: 24px; margin-bottom: 14px; }
+    .fi-title {
+      font-family: var(--display);
+      font-size: 20px;
+      color: var(--white);
+      letter-spacing: 0.3px;
+      margin-bottom: 8px;
+    }
+    .fi-desc { font-size: 13px; color: var(--muted); line-height: 1.5; font-weight: 300; }
+
+    /* ─────────────────────────────────────────────
+       CTA BAND
+    ───────────────────────────────────────────── */
+    .cta-band {
+      margin: 0 48px 100px;
+      max-width: calc(1280px - 96px);
+      margin-left: auto;
+      margin-right: auto;
+      background: linear-gradient(135deg, var(--navy) 0%, #042535 50%, #053344 100%);
+      border: 1px solid rgba(0,188,235,0.2);
+      border-radius: 20px;
+      padding: 64px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    .cta-band::before {
+      content: '';
+      position: absolute;
+      top: -60%; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(0,188,235,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-band h2 {
+      font-family: var(--display);
+      font-size: clamp(40px, 5vw, 64px);
+      letter-spacing: 1px;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .cta-band p {
+      font-size: 16px; color: var(--muted);
+      max-width: 480px; margin: 0 auto 36px;
+      font-weight: 300; line-height: 1.6;
+    }
+    .cta-actions { display: flex; justify-content: center; gap: 16px; }
+
+    /* ─────────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--rim);
+      padding: 40px 48px;
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .footer-brand {
+      font-family: var(--display);
+      font-size: 18px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+    .footer-brand span { color: var(--blue); }
+    .footer-note {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+    .footer-links { display:flex; gap:20px; }
+    .footer-links a {
+      font-size: 13px; color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--blue); }
+
+    /* ─────────────────────────────────────────────
+       SCROLL REVEAL
+    ───────────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─────────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .hero-badge { display: none; }
+      .journey-grid { grid-template-columns: repeat(2,1fr); }
+      .demo-layout { grid-template-columns: 1fr; }
+      .features-row { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 700px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 60px 20px; min-height: auto; padding-top: 80px; }
+      section, .features-strip { padding: 60px 20px; }
+      .journey-grid { grid-template-columns: 1fr; }
+      .features-row { grid-template-columns: 1fr; }
+      .cta-band { margin: 0 20px 60px; padding: 40px 28px; }
+      footer { flex-direction: column; text-align: center; padding: 32px 20px; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Background effects -->
+<div class="bg-mesh" aria-hidden="true"></div>
+<div class="bg-grid"  aria-hidden="true"></div>
+
+<div class="page">
+
+  <!-- ═══════════════════════════
+       NAVIGATION
+  ════════════════════════════ -->
+  <nav>
+    <a href="#" class="nav-brand">
+      <div class="nav-logo">💬</div>
+      <span class="nav-title">WEBEX <span>CC</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#journey">Modules</a></li>
+      <li><a href="#chat-demo">Live Demo</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#cta">Get Started</a></li>
+      <li><a href="#" class="nav-cta">Join the Lab →</a></li>
+    </ul>
+  </nav>
+
+  <!-- ═══════════════════════════
+       HERO
+  ════════════════════════════ -->
+  <div class="hero" id="home">
+    <div class="hero-eyebrow">
+      <span class="eyebrow-dot"></span>
+      Cisco Partner Bootcamp 2026
+    </div>
+
+    <h1 class="hero-headline">
+      WEBEX CC<br/>
+      <span class="stroke">ZERO</span> <span class="accent">TO</span><br/>
+      HERO
+    </h1>
+
+    <p class="hero-sub">
+      Master <strong>Webex Contact Center</strong> from the ground up.
+      Flows, routing, digital channels, AI — everything you need
+      to build production-ready contact centre deployments.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#journey" class="btn-primary">
+        <span>🚀</span> Start the Journey
+      </a>
+      <a href="#chat-demo" class="btn-secondary">
+        <span>💬</span> Try Live Demo
+      </a>
+    </div>
+
+    <!-- Floating module card -->
+    <div class="hero-badge">
+      <div class="hero-card">
+        <div class="hero-card-title">// Course Modules</div>
+        <ul class="module-list">
+          <li class="module-item">
+            <span class="module-icon">🏗️</span>
+            <span class="module-name">Platform Architecture</span>
+            <span class="module-status status-live">LIVE</span>
+          </li>
+          <li class="module-item">
+            <span class="module-icon">🔀</span>
+            <span class="module-name">Flow Builder</span>
+            <span class="module-status status-live">LIVE</span>
+          </li>
+          <li class="module-item">
+            <span class="module-icon">💬</span>
+            <span class="module-name">LiveChat & Webex Connect</span>
+            <span class="module-status status-lab">LAB</span>
+          </li>
+          <li class="module-item">
+            <span class="module-icon">🤖</span>
+            <span class="module-name">AI Agent Studio</span>
+            <span class="module-status status-lab">LAB</span>
+          </li>
+          <li class="module-item">
+            <span class="module-icon">📊</span>
+            <span class="module-name">Reporting & Analytics</span>
+            <span class="module-status status-coming">SOON</span>
+          </li>
+        </ul>
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-num">12</div>
+            <div class="stat-label">MODULES</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">8</div>
+            <div class="stat-label">HANDS-ON LABS</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">4H</div>
+            <div class="stat-label">CONTENT</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       JOURNEY / MODULES
+  ════════════════════════════ -->
+  <section id="journey">
+    <div class="reveal">
+      <p class="section-label">// Learning Path</p>
+      <h2 class="section-title">YOUR ZERO<br/>TO HERO<br/>JOURNEY</h2>
+      <p class="section-desc">Six progressive modules taking you from platform fundamentals to advanced digital channel integrations and AI-powered automation.</p>
+    </div>
+
+    <div class="journey-grid">
+      <div class="journey-card reveal">
+        <div class="jcard-num">01</div>
+        <div class="jcard-icon">🏗️</div>
+        <div class="jcard-title">Platform Foundations</div>
+        <p class="jcard-desc">Understand the Webex Contact Center architecture — tenants, Control Hub, agents, queues, and the relationship with Webex Connect.</p>
+        <div class="jcard-tag">⏱ 30 min &nbsp;·&nbsp; Lecture</div>
+      </div>
+      <div class="journey-card reveal">
+        <div class="jcard-num">02</div>
+        <div class="jcard-icon">🔀</div>
+        <div class="jcard-title">Flow Builder Mastery</div>
+        <p class="jcard-desc">Build inbound flows from scratch — routing logic, queue tasks, evaluate nodes, error handling, and the key transition event names.</p>
+        <div class="jcard-tag">⏱ 45 min &nbsp;·&nbsp; Lab</div>
+      </div>
+      <div class="journey-card reveal">
+        <div class="jcard-num">03</div>
+        <div class="jcard-icon">💬</div>
+        <div class="jcard-title">Digital Channels</div>
+        <p class="jcard-desc">Configure LiveChat, WhatsApp, Email, and Facebook Messenger. Build the full inbound LiveChat flow with pre-chat form and WxCC task routing.</p>
+        <div class="jcard-tag">⏱ 60 min &nbsp;·&nbsp; Lab</div>
+      </div>
+      <div class="journey-card reveal">
+        <div class="jcard-num">04</div>
+        <div class="jcard-icon">🤖</div>
+        <div class="jcard-title">AI Agent Studio</div>
+        <p class="jcard-desc">Deploy conversational AI bots, configure intents, build escalation paths, and connect your virtual agent to the WxCC queue task flow.</p>
+        <div class="jcard-tag">⏱ 45 min &nbsp;·&nbsp; Lab</div>
+      </div>
+      <div class="journey-card reveal">
+        <div class="jcard-num">05</div>
+        <div class="jcard-icon">🌊</div>
+        <div class="jcard-title">Campaign Management</div>
+        <p class="jcard-desc">Configure outbound voice campaigns — dialling modes, contact lists, campaign groups, Webex Campaign Manager integration and pre-requisites.</p>
+        <div class="jcard-tag">⏱ 40 min &nbsp;·&nbsp; Lab</div>
+      </div>
+      <div class="journey-card reveal">
+        <div class="jcard-num">06</div>
+        <div class="jcard-icon">📊</div>
+        <div class="jcard-title">Reporting & WFO</div>
+        <p class="jcard-desc">Analyse contact centre performance with Analyzer dashboards, build custom reports, and understand workforce optimisation integration points.</p>
+        <div class="jcard-tag">⏱ 30 min &nbsp;·&nbsp; Lecture</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"><hr/></div>
+
+  <!-- ═══════════════════════════
+       LIVE DEMO / CHAT SECTION
+  ════════════════════════════ -->
+  <section id="chat-demo">
+    <div class="demo-layout">
+
+      <!-- Left: info -->
+      <div class="demo-info reveal">
+        <p class="section-label">// Module 03 — Live Demo</p>
+        <h2 class="section-title">TRY THE<br/>LIVECHAT<br/>WIDGET</h2>
+        <p class="section-desc">
+          This is a live test environment. The chat widget on the right is connected to a real Webex Connect flow — submit the pre-chat form and watch the task arrive in the WxCC Agent Desktop.
+        </p>
+
+        <ul class="checklist">
+          <li class="check-item">
+            <div class="check-icon">✓</div>
+            <span>Pre-chat form collects Name, Email, and Reason for contact</span>
+          </li>
+          <li class="check-item">
+            <div class="check-icon">✓</div>
+            <span>Webex Connect flow searches for existing conversations before routing</span>
+          </li>
+          <li class="check-item">
+            <div class="check-icon">✓</div>
+            <span>New contacts create a WxCC task and queue to the agent desktop</span>
+          </li>
+          <li class="check-item">
+            <div class="check-icon">✓</div>
+            <span>Returning contacts are appended to their existing conversation</span>
+          </li>
+          <li class="check-item">
+            <div class="check-icon">✓</div>
+            <span>All activity visible in Webex Connect Flow Debug logs in real time</span>
+          </li>
+        </ul>
+
+        <a href="#" class="btn-secondary">
+          <span>📖</span> View Flow Guide
+        </a>
+      </div>
+
+      <!-- Right: mock browser with widget zone -->
+      <div class="reveal" style="animation-delay:0.15s">
+        <div class="widget-zone">
+          <div class="widget-zone-top">
+            <div class="wz-dots">
+              <span class="wz-r"></span>
+              <span class="wz-y"></span>
+              <span class="wz-g"></span>
+            </div>
+            <span class="wz-label">localhost:8765 / test-page.html</span>
+            <span class="wz-badge">🔴 WIDGET PENDING</span>
+          </div>
+
+          <div class="mock-page">
+            <!-- Skeleton mock page content -->
+            <div class="mock-header-bar">
+              <div class="mock-logo-pill">WxCC</div>
+              <div class="mock-nav-pills">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+
+            <div class="mock-hero-block">
+              <div class="mock-title-line"></div>
+              <div class="mock-title-line short"></div>
+              <div class="mock-body-lines">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+
+            <div class="mock-cards-row">
+              <div class="mock-mini-card"><span></span><span></span></div>
+              <div class="mock-mini-card"><span></span><span></span></div>
+              <div class="mock-mini-card"><span></span><span></span></div>
+            </div>
+
+            <!-- ════════════════════════════════════════
+                 WIDGET SNIPPET INJECTION ZONE
+                 Paste your Webex Connect embed code here
+            ═══════════════════════════════════════════ -->
+            <div class="widget-snippet-zone">
+              <span class="wsz-label">WIDGET SNIPPET</span>
+              <div class="wsz-comment">
+                <span class="cmt">&lt;!-- ═══════════════════════════════════════════ --&gt;</span><br/>
+                <span class="cmt">&lt;!--  WEBEX CONNECT LIVECHAT WIDGET            --&gt;</span><br/>
+                <span class="cmt">&lt;!--  Paste your embed code from:              --&gt;</span><br/>
+                <span class="cmt">&lt;!--  Webex Connect → Assets → Apps →          --&gt;</span><br/>
+                <span class="cmt">&lt;!--  [your LiveChat asset] → Embed Code       --&gt;</span><br/>
+                <span class="cmt">&lt;!-- ═══════════════════════════════════════════ --&gt;</span><br/><br/>
+                <span class="placeholder">&lt;script&gt; ... your widget script here ... &lt;/script&gt;</span>
+              </div>
+              <div class="wsz-arrow">Replace the placeholder above with your widget &lt;script&gt; block</div>
+            </div>
+            <!-- ════════════════════════════════════════
+                 END WIDGET ZONE
+            ═══════════════════════════════════════════ -->
+
+            <!-- Animated mock chat bubble -->
+            <div class="mock-chat-bubble" title="Chat widget will appear here">
+              <div class="bubble-ring"></div>
+              💬
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"><hr/></div>
+
+  <!-- ═══════════════════════════
+       FEATURES STRIP
+  ════════════════════════════ -->
+  <div class="features-strip" id="features">
+    <div class="reveal" style="text-align:center; margin-bottom:40px;">
+      <p class="section-label" style="justify-content:center; display:flex;">// Platform Capabilities</p>
+      <h2 class="section-title" style="font-size:clamp(36px,4vw,56px);">EVERYTHING IN ONE PLATFORM</h2>
+    </div>
+    <div class="features-row reveal">
+      <div class="feature-item">
+        <div class="fi-icon">🔀</div>
+        <div class="fi-title">Visual Flow Builder</div>
+        <p class="fi-desc">Drag-and-drop node canvas for building inbound and outbound routing flows without code.</p>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🌐</div>
+        <div class="fi-title">Omnichannel</div>
+        <p class="fi-desc">LiveChat, WhatsApp, Email, Facebook Messenger, SMS, Apple Business Chat — unified agent desktop.</p>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🤖</div>
+        <div class="fi-title">AI-Powered</div>
+        <p class="fi-desc">Virtual agents, sentiment analysis, agent assist, automatic summaries, and CSAT prediction built in.</p>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📊</div>
+        <div class="fi-title">Real-Time Analytics</div>
+        <p class="fi-desc">Analyzer dashboards with customisable reports, historical data, and real-time queue monitoring.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       CTA BAND
+  ════════════════════════════ -->
+  <div class="cta-band reveal" id="cta">
+    <h2>READY TO GO<br/><span style="color:var(--blue)">HERO?</span></h2>
+    <p>Join the Cisco Partner Bootcamp and get hands-on lab access to a fully provisioned Webex Contact Center tenant.</p>
+    <div class="cta-actions">
+      <a href="#journey" class="btn-primary">
+        <span>🚀</span> Start Module 01
+      </a>
+      <a href="#chat-demo" class="btn-secondary">
+        <span>💬</span> Test the Widget
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════
+       FOOTER
+  ════════════════════════════ -->
+  <footer>
+    <div class="footer-brand">WEBEX <span>CC</span> ZERO TO HERO</div>
+    <div class="footer-links">
+      <a href="https://help.webexconnect.io" target="_blank">Docs</a>
+      <a href="https://developer.webex.com" target="_blank">DevNet</a>
+      <a href="https://www.cisco.com" target="_blank">Cisco</a>
+    </div>
+    <div class="footer-note">© 2026 Cisco Systems — Partner Enablement</div>
+  </footer>
+
+</div><!-- /page -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCROLL REVEAL OBSERVER
+═══════════════════════════════════════════════════════════ -->
+<script>
+  (function() {
+    var items = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      items.forEach(function(el) { el.classList.add('visible'); });
+      return;
+    }
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    items.forEach(function(el, i) {
+      el.style.transitionDelay = (i % 3 * 0.08) + 's';
+      obs.observe(el);
+    });
+  })();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ↓↓↓  PASTE YOUR WEBEX CONNECT WIDGET SNIPPET HERE  ↓↓↓
+     ─────────────────────────────────────────────────────────
+     Copy the embed <script> block from:
+     Webex Connect → Assets → Apps → [your LiveChat asset]
+     → Embed Code section
+
+     Then paste it between the two marker comments below.
+     The chat bubble will appear in the bottom-right corner
+     of this page once the script loads.
+═══════════════════════════════════════════════════════════ -->
+
+<!-- ✂ BEGIN WIDGET SNIPPET ─────────────────────────────── -->
+
+<div id="divicw" data-bind="F8337C74-CF9F-41A1-9EDF-7490555EB914" data-org="" data-guid="92cdbb0a-e0f4-45fa-b01b-8224065342ac"></div><script>{3}var i={t:function(){try{var e=document.getElementById("divicw"),t=document.createElement("script");t.src="https://media.imi.chat/widget/js/imichatinit.js?t="+new Date().toISOString(),e.insertAdjacentElement("afterend",t),t.addEventListener("load",function(){console.log(new Date().toISOString(),"Livechat script loaded successfully!")}),t.addEventListener("error",function(){console.log(new Date().toISOString(),"Error loading Livechat script");i.o(e)})}catch(e){console.error(e)}},o:function(e){e.insertAdjacentHTML("afterend",'<iframe id="tls_al_frm" frameborder="0" style="overflow:hidden;height:208px;width:394px;position:fixed;display:block;right:48px;bottom:12px;z-index:99999;display:none;"></iframe>');var t=document.getElementById("tls_al_frm"),n=t.contentWindow,d=n.document;d.open();d.write("<!doctype html><html><head><meta charset='utf-8'><title>Untitled Document</title><style>body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#99a0b0;font-size:14px}.popover__content{background-color:#fbfbfe;padding:1.5rem;border-radius:5px;width:300px;box-shadow:0 2px 5px 0 rgba(0,0,0,0.26);position:relative}.popover__message{font-weight:600;color:#56627c;font-size:16px}.pull-left{float:left}.clearfix{clear:both}.hdr-txt{width:218px;margin-top:3px}.para-txt a{text-decoration:none;color:#005cde}.close-btn{position:absolute;right:15px;top:15px}.close-btn a{text-decoration:none;font-weight:400;color:#56627c;font-size:16px}</style></head><body><div class='popover__content'><div class='close-btn'><a href='#' onclick='closeTLSAlert()'>X</a></div><div class='popover__message'><div class='pull-left hdr-txt'>This browser version is not supported on LiveChat.</div></div><div class='clearfix'></div><p class='para-txt'>Please update your browser to the latest version and re-open the website to access the widget.</p></div><script>function closeTLSAlert(){window.parent.postMessage({key:'close_tls_alert',value:'close_tls_alert',action:'close_tls_alert'},'*');}<\/script></body></html>");d.close();t.style.display='block';window.addEventListener('message',function(e){'close_tls_alert'===e.data.action&&i.s()})},s:function(){var e=document.getElementById('tls_al_frm');e&&e.remove()}};i.t();</script>
+
+<!-- ✂ END WIDGET SNIPPET ───────────────────────────────── -->
+
+</body>
+</html>
